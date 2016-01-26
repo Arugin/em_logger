@@ -1,4 +1,5 @@
 # EventMachine Logger
+[![Build Status](https://travis-ci.org/Arugin/em_logger.svg?branch=master)](https://travis-ci.org/Arugin/em_logger)
 
 EM::Logger is a simple async wrapper around the ruby logger class. It responds to all the log levels you are familiar with 
 from existing loggers (info, debug, warn, etc.). The only difference is that it's instantiated by passing an existing logger in when initializing.
