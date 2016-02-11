@@ -1,4 +1,5 @@
 # EventMachine Logger
+[![Gem Version](https://badge.fury.io/rb/em_logger.svg)](https://badge.fury.io/rb/em_logger)
 [![Build Status](https://travis-ci.org/Arugin/em_logger.svg?branch=master)](https://travis-ci.org/Arugin/em_logger)
 [![Coverage Status](https://coveralls.io/repos/github/Arugin/em_logger/badge.svg?branch=master)](https://coveralls.io/github/Arugin/em_logger?branch=master)
 
