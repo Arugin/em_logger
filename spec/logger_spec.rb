@@ -4,7 +4,7 @@ describe EventMachine::Logger do
   let(:logger) { ::Logger.new(STDOUT) }
 
   describe 'creating' do
-    subject { EventMachine::Logger.new(logger) }
+    subject { EventMachine::Logger.new(logger, batch_size: 1) }
 
     it 'instantiates with a logger' do
       EM.run_block do
@@ -30,7 +30,7 @@ describe EventMachine::Logger do
   end
 
   describe 'log statements' do
-    let(:em_logger) { EventMachine::Logger.new(logger) }
+    let(:em_logger) { EventMachine::Logger.new(logger, batch_size: 1) }
 
     %w(debug info warn error fatal).each do |l|
       describe "##{l}" do
@@ -61,7 +61,7 @@ describe EventMachine::Logger do
       context 'when logging below the defined level' do
         it 'pushes the log message onto the logger_queue' do
           logger.level = ::Logger::WARN
-          em_logger = EventMachine::Logger.new(logger)
+          em_logger = EventMachine::Logger.new(logger, batch_size: 1)
           expect(em_logger.logger_queue).to_not receive('push')
           expect(em_logger.add(::Logger::INFO, 'this is a test')).to be_truthy
         end
@@ -69,7 +69,7 @@ describe EventMachine::Logger do
 
       context 'when logging above the defined level' do
         it 'pushes the log message onto the logger_queue' do
-          em_logger = EventMachine::Logger.new(logger)
+          em_logger = EventMachine::Logger.new(logger, batch_size: 1)
           expect(em_logger.logger_queue).to receive('push').once
           em_logger.add(::Logger::INFO, 'this is a test')
         end
@@ -77,7 +77,7 @@ describe EventMachine::Logger do
 
       context 'when using a block' do
         it 'evaluates the block' do
-          em_logger = EventMachine::Logger.new(logger)
+          em_logger = EventMachine::Logger.new(logger, batch_size: 1)
           expect(em_logger.logger_queue).to receive('push').once
           em_logger.add(::Logger::INFO) { 'ohai' }
         end
@@ -104,6 +104,27 @@ describe EventMachine::Logger do
       it 'responds to methods defined on the logger' do
         em_logger = EventMachine::Logger.new(logger)
         expect(em_logger.respond_to?('level')).to be_truthy
+      end
+    end
+  end
+
+  context 'when messages less than batch size' do
+    it 'does not touch the logger' do
+      em_logger = EventMachine::Logger.new(logger, batch_size: 2)
+      expect(logger).to_not receive(:add)
+      EM.run_block do
+        em_logger.info('First log')
+      end
+    end
+
+    context 'when several messages' do
+      it 'does not touch the logger' do
+        em_logger = EventMachine::Logger.new(logger, batch_size: 2)
+        expect(logger).to receive(:add).twice
+        EM.run_block do
+          em_logger.info('First log')
+          em_logger.info('First log')
+        end
       end
     end
   end

@@ -18,13 +18,14 @@ module EventMachine
     attr_reader :logger
     attr_reader :logger_queue
 
-    def self.logger(logger = nil)
-      @logger ||= new(logger || ::Logger.new(STDOUT))
+    def self.logger(logger = nil, options = {})
+      @logger ||= new(logger || ::Logger.new(STDOUT), options)
     end
 
-    def initialize(logger)
+    def initialize(logger, batch_size: 100)
       @logger = logger
       @logger_queue = ::Queue.new
+      @batch_size = batch_size
 
       start_worker
 
@@ -42,7 +43,8 @@ module EventMachine
         end
       end
       @logger_queue.push(LogMessage.new(severity, message, progname))
-      @worker.wakeup
+ 
+      @worker.wakeup if @logger_queue.size >= @batch_size
     end
 
     alias log add
@@ -104,6 +106,7 @@ module EventMachine
         end
 
       end
+
       @worker.abort_on_exception = true
     end
 
